@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Online Food Ordering API",
   "main": "dist/index.js",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
@@ -24,6 +27,7 @@
     "stripe": "^17.5.0"
   },
   "devDependencies": {
+    "@vercel/node": "^5.1.14",
     "@types/bcryptjs": "^2.4.6",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",

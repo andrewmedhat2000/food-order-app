@@ -8,11 +8,15 @@ import productRoutes from './routes/productRoutes';
 import orderRoutes from './routes/orderRoutes';
 
 const LOCALHOST_ORIGIN = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
+const VERCEL_ORIGIN = /^https:\/\/[\w-]+[\w.-]*\.vercel\.app$/;
 
 function isAllowedOrigin(origin: string | undefined): boolean {
   if (!origin) return true;
   if (env.allowedOrigins.includes(origin)) return true;
   if (process.env.NODE_ENV !== 'production' && LOCALHOST_ORIGIN.test(origin)) return true;
+  if (process.env.NODE_ENV === 'production' && VERCEL_ORIGIN.test(origin)) {
+    return env.allowedOrigins.some((allowed) => allowed.includes('.vercel.app'));
+  }
   return false;
 }
 

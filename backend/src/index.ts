@@ -8,8 +8,8 @@ async function bootstrap() {
 
   const app = createApp();
 
-  app.listen(env.port, () => {
-    console.log(`Server running on http://localhost:${env.port}`);
+  app.listen(env.port, '0.0.0.0', () => {
+    console.log(`Server running on port ${env.port}`);
     if (isStripeConfigured()) {
       console.log('Stripe: enabled (test/live secret key loaded)');
     } else {
