@@ -54,7 +54,7 @@ export async function createOrder(req: AuthRequest, res: Response): Promise<void
     });
 
     if (paymentMethod === 'online') {
-      if (!isStripeConfigured()) {
+      if (!isStripeConfigured() || !stripe) {
         res.status(503).json({
           message:
             'Online payments are not configured. Add STRIPE_SECRET_KEY to backend/.env and restart the server. Get test keys at https://dashboard.stripe.com/test/apikeys',
