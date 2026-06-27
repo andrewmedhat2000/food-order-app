@@ -1,5 +1,6 @@
 import express, { Express } from 'express';
 import cors from 'cors';
+import { connectDatabase } from './config/database';
 import { env } from './config/env';
 import { isStripeConfigured } from './config/stripe';
 import { errorHandler } from './middleware/errorHandler';
@@ -15,13 +16,28 @@ function isAllowedOrigin(origin: string | undefined): boolean {
   if (env.allowedOrigins.includes(origin)) return true;
   if (process.env.NODE_ENV !== 'production' && LOCALHOST_ORIGIN.test(origin)) return true;
   if (process.env.NODE_ENV === 'production' && VERCEL_ORIGIN.test(origin)) {
-    return env.allowedOrigins.some((allowed) => allowed.includes('.vercel.app'));
+    return true;
   }
   return false;
 }
 
 export function createApp(): Express {
   const app = express();
+
+  if (process.env.VERCEL) {
+    app.use(async (req, res, next) => {
+      if (req.path === '/api/health') {
+        next();
+        return;
+      }
+      try {
+        await connectDatabase();
+        next();
+      } catch (err) {
+        next(err);
+      }
+    });
+  }
 
   app.use(
     cors({
@@ -39,8 +55,17 @@ export function createApp(): Express {
   );
   app.use(express.json());
 
-  app.get('/api/health', (_req, res) => {
-    res.json({ status: 'ok' });
+  app.get('/api/health', async (_req, res) => {
+    try {
+      await connectDatabase();
+      res.json({ status: 'ok', database: 'connected' });
+    } catch (err) {
+      res.status(503).json({
+        status: 'error',
+        database: 'failed',
+        message: err instanceof Error ? err.message : 'Database connection failed',
+      });
+    }
   });
 
   app.get('/api/config/payments', (_req, res) => {
