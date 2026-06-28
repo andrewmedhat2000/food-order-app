@@ -9,35 +9,24 @@ import productRoutes from './routes/productRoutes';
 import orderRoutes from './routes/orderRoutes';
 
 const LOCALHOST_ORIGIN = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
-const VERCEL_ORIGIN = /^https:\/\/[\w-]+[\w.-]*\.vercel\.app$/;
+const VERCEL_ORIGIN = /^https:\/\/[\w.-]+\.vercel\.app$/;
 
 function isAllowedOrigin(origin: string | undefined): boolean {
   if (!origin) return true;
   if (env.allowedOrigins.includes(origin)) return true;
-  if (process.env.NODE_ENV !== 'production' && LOCALHOST_ORIGIN.test(origin)) return true;
-  if (process.env.NODE_ENV === 'production' && VERCEL_ORIGIN.test(origin)) {
-    return true;
-  }
+  if (LOCALHOST_ORIGIN.test(origin)) return true;
+  if (VERCEL_ORIGIN.test(origin)) return true;
   return false;
+}
+
+function shouldConnectDatabase(req: { method: string; path: string }): boolean {
+  if (req.method === 'OPTIONS') return false;
+  if (req.path === '/api/health') return false;
+  return true;
 }
 
 export function createApp(): Express {
   const app = express();
-
-  if (process.env.VERCEL) {
-    app.use(async (req, res, next) => {
-      if (req.path === '/api/health') {
-        next();
-        return;
-      }
-      try {
-        await connectDatabase();
-        next();
-      } catch (err) {
-        next(err);
-      }
-    });
-  }
 
   app.use(
     cors({
@@ -54,6 +43,21 @@ export function createApp(): Express {
     })
   );
   app.use(express.json());
+
+  if (process.env.VERCEL) {
+    app.use(async (req, res, next) => {
+      if (!shouldConnectDatabase(req)) {
+        next();
+        return;
+      }
+      try {
+        await connectDatabase();
+        next();
+      } catch (err) {
+        next(err);
+      }
+    });
+  }
 
   app.get('/api/health', async (_req, res) => {
     try {
