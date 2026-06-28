@@ -1,6 +1,14 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL ?? '/api';
+function normalizeApiUrl(raw: string): string {
+  const trimmed = raw.replace(/\/+$/, '');
+  if (trimmed.startsWith('http') && !trimmed.endsWith('/api')) {
+    return `${trimmed}/api`;
+  }
+  return trimmed || '/api';
+}
+
+const API_URL = normalizeApiUrl(import.meta.env.VITE_API_URL ?? '/api');
 
 export const api = axios.create({
   baseURL: API_URL,
@@ -55,12 +63,12 @@ export function getApiErrorMessage(error: unknown, fallback: string): string {
     const parsed = parseApiErrorBody(error.response?.data);
 
     if (status === 403) {
-      return 'Forbidden (403). Restart backend on port 5001 and use the app at http://localhost:5173 — do not call port 5000 directly.';
+      return 'Access denied. Check API URL and CORS settings on the backend.';
     }
     if (parsed) return parsed;
     if (status) return `${fallback} (HTTP ${status})`;
     if (error.code === 'ERR_NETWORK') {
-      return 'Cannot reach API. Is the backend running? Run: cd backend && npm run dev';
+      return 'Cannot reach API. Check VITE_API_URL and that the backend is running.';
     }
   }
   return fallback;
