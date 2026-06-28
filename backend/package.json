@@ -17,6 +17,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@vercel/node": "^5.1.14",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
@@ -27,7 +28,6 @@
     "stripe": "^17.5.0"
   },
   "devDependencies": {
-    "@vercel/node": "^5.1.14",
     "@types/bcryptjs": "^2.4.6",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",

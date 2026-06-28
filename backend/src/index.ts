@@ -3,7 +3,7 @@ import { env } from './config/env';
 import { isStripeConfigured } from './config/stripe';
 import { createApp } from './app';
 
-async function bootstrap() {
+async function bootstrap(): Promise<void> {
   await connectDatabase();
 
   const app = createApp();
